@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -19,6 +19,7 @@ namespace VideoTagger
     {
         private BackgroundWorker bw;
         private string videoFile = "";
+        private string videoSettingFile = "";
         private double videoSpeed = 1.0;
         private bool videoPlaying = false;
         private bool trackBarModified = false;
@@ -28,7 +29,7 @@ namespace VideoTagger
         private string settingFile = "setting.txt";
         double maxFps;
         private int intervalMsMin = 100;
-        private string[] tags = new string[10];
+        private string[] tags = new string[9];
         private int posFrame = 0;
         private int posMs = 0;
         private SortedDictionary<int, string> timeKeys = new SortedDictionary<int, string>();
@@ -43,45 +44,74 @@ namespace VideoTagger
             this.KeyPreview = true;
 
             // 設定読み出し
-            using (StreamReader sr = new StreamReader(settingFile, Encoding.GetEncoding("utf-8")))
-            {
-                // 再生可能最大FPS
-                if (!double.TryParse(sr.ReadLine(), out maxFps))
-                {
-                    maxFps = 30.0;
-                }
-                intervalMsMin = (int)(1000 / maxFps);
-                toolStripMenuItemFps.Text = maxFps.ToString();  // Max FPS
-                // TAGS
-                tags[0] = sr.ReadLine();  // TAG
-                tags[1] = sr.ReadLine();  // TAG
-                tags[2] = sr.ReadLine();  // TAG
-                tags[3] = sr.ReadLine();  // TAG
-                tags[4] = sr.ReadLine();  // TAG
-                tags[5] = sr.ReadLine();  // TAG
-                tags[6] = sr.ReadLine();  // TAG
-                tags[7] = sr.ReadLine();  // TAG
-                tags[8] = sr.ReadLine();  // TAG
-                toolStripMenuItemT1.Text = "1:" + tags[0];  // TAG
-                toolStripMenuItemT2.Text = "2:" + tags[1];  // TAG
-                toolStripMenuItemT3.Text = "3:" + tags[2];  // TAG
-                toolStripMenuItemT4.Text = "4:" + tags[3];  // TAG
-                toolStripMenuItemT5.Text = "5:" + tags[4];  // TAG
-                toolStripMenuItemT6.Text = "6:" + tags[5];  // TAG
-                toolStripMenuItemT7.Text = "7:" + tags[6];  // TAG
-                toolStripMenuItemT8.Text = "8:" + tags[7];  // TAG
-                toolStripMenuItemT9.Text = "9:" + tags[8];  // TAG
-            }
+            readSettings();
+
+            // Tagsメニューを設定
+            setTagsMenu();
 
             this.FormClosing += Form1_FormClosing; ;
         }
 
+
+        // 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             saveSetting();
         }
 
 
+        // 設定読み
+        private void readSettings()
+        {
+            if (File.Exists(settingFile))
+            {
+                using (StreamReader sr = new StreamReader(settingFile, Encoding.GetEncoding("utf-8")))
+                {
+                    // 再生可能最大FPS
+                    if (!double.TryParse(sr.ReadLine(), out maxFps))
+                    {
+                        maxFps = 35.0;
+                    }
+                    tags[0] = sr.ReadLine();  // Tags
+                    tags[1] = sr.ReadLine();
+                    tags[2] = sr.ReadLine();
+                    tags[3] = sr.ReadLine();
+                    tags[4] = sr.ReadLine();
+                    tags[5] = sr.ReadLine();
+                    tags[6] = sr.ReadLine();
+                    tags[7] = sr.ReadLine();
+                    tags[8] = sr.ReadLine();
+                }
+            }
+            else
+            {
+                maxFps = 35.0;
+                for (int i = 0; i < tags.Length; i++)
+                {
+                    tags[i] = i.ToString();
+                }
+            }
+            intervalMsMin = (int)(1000 / maxFps);
+            toolStripMenuItemFps.Text = maxFps.ToString();  // Max FPS
+        }
+
+
+        // Tagsメニューを設定
+        private void setTagsMenu()
+        {
+            toolStripMenuItemT1.Text = "1:" + tags[0];
+            toolStripMenuItemT2.Text = "2:" + tags[1];
+            toolStripMenuItemT3.Text = "3:" + tags[2];
+            toolStripMenuItemT4.Text = "4:" + tags[3];
+            toolStripMenuItemT5.Text = "5:" + tags[4];
+            toolStripMenuItemT6.Text = "6:" + tags[5];
+            toolStripMenuItemT7.Text = "7:" + tags[6];
+            toolStripMenuItemT8.Text = "8:" + tags[7];
+            toolStripMenuItemT9.Text = "9:" + tags[8];
+        }
+
+
+        // 設定保存
         private void saveSetting()
         {
             using (StreamWriter sw = new StreamWriter(settingFile, false, Encoding.GetEncoding("utf-8")))
@@ -96,7 +126,6 @@ namespace VideoTagger
                 sw.WriteLine(tags[6]);
                 sw.WriteLine(tags[7]);
                 sw.WriteLine(tags[8]);
-                sw.WriteLine(tags[9]);
             }
         }
 
@@ -107,6 +136,7 @@ namespace VideoTagger
             videoPlaying = true;
             try
             {
+                // 動画を再生
                 using (var capture = new VideoCapture(videoFile))
                 {
                     int frameWidth = capture.FrameWidth;
@@ -193,6 +223,10 @@ namespace VideoTagger
                                 e.Cancel = false;
                                 break;
                             }
+                            if (capture.PosFrames == capture.FrameCount)
+                            {
+                                videoPlaying = false;  // 最終フレームを再生したら、一時停止しておく
+                            }
                             if (bw.CancellationPending)
                             {
                                 e.Cancel = true;
@@ -227,12 +261,14 @@ namespace VideoTagger
         }
 
 
+        // 動画を開く
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var fd = new OpenFileDialog();
             var dr = fd.ShowDialog();
             if (dr == DialogResult.OK)
             {
+                // 動画を再生中であれば終了させる
                 if (bw != null)
                 {
                     if (bw.IsBusy)
@@ -252,6 +288,10 @@ namespace VideoTagger
                 bw.ProgressChanged += bw_ProgressChanged;
 
                 videoFile = fd.FileName;
+                videoSettingFile = videoFile + ".config.txt";
+                // 指定動画の固有設定やタイムスタンプを読み出し
+                readVideoSettings();
+
                 bw.RunWorkerAsync();
             }
         }
@@ -494,54 +534,82 @@ namespace VideoTagger
         }
 
 
+        // 動画固有の設定を保存する
         private void button1_Click(object sender, EventArgs e)
         {
             // 保存
-            var fd = new SaveFileDialog();
-            var dr = fd.ShowDialog();
-            if (dr == DialogResult.OK)
+            using (StreamWriter sw = new StreamWriter(videoSettingFile, false, Encoding.GetEncoding("utf-8")))
             {
-                using (StreamWriter sw = new StreamWriter(fd.FileName, false, Encoding.GetEncoding("utf-8")))
+                sw.WriteLine(tags[0]);
+                sw.WriteLine(tags[1]);
+                sw.WriteLine(tags[2]);
+                sw.WriteLine(tags[3]);
+                sw.WriteLine(tags[4]);
+                sw.WriteLine(tags[5]);
+                sw.WriteLine(tags[6]);
+                sw.WriteLine(tags[7]);
+                sw.WriteLine(tags[8]);
+                foreach (KeyValuePair<int, string> pair in timeKeys)
                 {
-                    foreach (KeyValuePair<int, string> pair in timeKeys)
-                    {
-                        sw.WriteLine((((double)pair.Key) / 1000).ToString() + "/" + pair.Value);
-                    }
+                    sw.WriteLine((((double)pair.Key) / 1000).ToString() + "/" + pair.Value);
                 }
             }
             trackBar1.Focus();
         }
 
+
+        // 動画固有の設定を読む(読み直しの意味合い)
         private void button2_Click(object sender, EventArgs e)
         {
             // 読出
-            var fd = new OpenFileDialog();
-            var dr = fd.ShowDialog();
-            if (dr == DialogResult.OK)
+            readVideoSettings();
+            trackBar1.Focus();
+        }
+
+
+        // 動画固有の設定やタグを読む
+        private void readVideoSettings()
+        {
+            readSettings();
+            timeKeys.Clear();
+            if (File.Exists(videoSettingFile))
             {
-                using (StreamReader sr = new StreamReader(fd.FileName, Encoding.GetEncoding("utf-8")))
+                using (StreamReader sr = new StreamReader(videoSettingFile, Encoding.GetEncoding("utf-8")))
                 {
-                    timeKeys.Clear();
+                    tags[0] = sr.ReadLine();
+                    tags[1] = sr.ReadLine();
+                    tags[2] = sr.ReadLine();
+                    tags[3] = sr.ReadLine();
+                    tags[4] = sr.ReadLine();
+                    tags[5] = sr.ReadLine();
+                    tags[6] = sr.ReadLine();
+                    tags[7] = sr.ReadLine();
+                    tags[8] = sr.ReadLine();
                     while (!sr.EndOfStream)
                     {
                         string aLine = sr.ReadLine();
                         string[] kv = aLine.Split(new char[] { '/' }, 2);
                         if (kv.Length == 2)
                         {
-                            timeKeys.Add(int.Parse(kv[0]), kv[1]);
+                            timeKeys.Add((int)(double.Parse(kv[0]) * 1000), kv[1]);
                         }
                     }
                 }
-                listBox1.Items.Clear();
-                foreach (KeyValuePair<int, string> pair in timeKeys)
-                {
-                    listBox1.Items.Add((((double)pair.Key) / 1000).ToString() + "/" + pair.Value);
-                }
             }
-            trackBar1.Focus();
+            else
+            {
+                timeKeys.Clear();
+            }
+            setTagsMenu();
+            listBox1.Items.Clear();
+            foreach (KeyValuePair<int, string> pair in timeKeys)
+            {
+                listBox1.Items.Add((((double)pair.Key) / 1000).ToString() + "/" + pair.Value);
+            }
         }
 
 
+        // クリックしたらそのフレームに飛ぶ
         private void listBox1_Click(object sender, EventArgs e)
         {
             if (listBox1.Items.Count > 0 && listBox1.SelectedIndex >= 0)
@@ -551,6 +619,9 @@ namespace VideoTagger
                 positionMsModified = true;
             }
         }
+
+
+        // DELキーでタグ付け削除
         private void listBox1_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
