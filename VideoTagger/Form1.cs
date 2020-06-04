@@ -166,13 +166,15 @@ namespace VideoTagger
                     }
 
                     var mat = new Mat();
+                    int intervalMs = 300;
+                    int skip = 1;
                     while (true)
                     {
+                        // 最大FPS以上のフレームレートになるものは、間引きして再生する
                         if (videoPlaying || trackBarModified || positionMsModified)
                         {
-                            // 最大FPS以上のフレームレートになるものは、間引きして再生する
-                            int intervalMs = (int)((1000 / capture.Fps) / videoSpeed);
-                            int skip = (int)Math.Ceiling((double)intervalMsMin / intervalMs);
+                            intervalMs = (int)((1000 / capture.Fps) / videoSpeed);
+                            skip = (int)Math.Ceiling((double)intervalMsMin / intervalMs);
                             if (skip > 1)
                             {
                                 capture.PosFrames += skip - 1;
@@ -216,7 +218,6 @@ namespace VideoTagger
                                     labelPosSec.Text = (((double)posMs) / 1000).ToString();
                                     trackBar1.Value = (int)((double)100 * capture.PosFrames / capture.FrameCount);
                                 }
-                                Thread.Sleep(intervalMs);
                             }
                             else
                             {
@@ -233,6 +234,7 @@ namespace VideoTagger
                                 break;
                             }
                         }
+                        Thread.Sleep(intervalMs);
                     }
                 }
             }
