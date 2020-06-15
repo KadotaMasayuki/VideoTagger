@@ -1,4 +1,4 @@
-﻿namespace VideoTagger
+namespace VideoTagger
 {
     partial class Form1
     {
