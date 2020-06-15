@@ -153,6 +153,10 @@ namespace VideoTagger
                             pictureBox1.Height = frameHeight;
                             labelTotalFrame.Text = "/ " + frames.ToString() + "[frame]  ";
                             labelTotalSec.Text = string.Format("/ {0:F3}[s]", ((double)frames / capture.Fps));
+                            trackBar1.Minimum = 0;
+                            trackBar1.Maximum = (int)(capture.FrameCount / capture.Fps);
+                            trackBar1.Value = 0;
+                            trackBar1.LargeChange = (int)(trackBar1.Maximum / 10);
                         }));
                     }
                     else
@@ -163,16 +167,22 @@ namespace VideoTagger
                         pictureBox1.Height = frameHeight;
                         labelTotalFrame.Text = "/ " +  frames.ToString() + "[frame]  ";
                         labelTotalSec.Text = string.Format("/ {0:F3}[s]", ((double)frames / capture.Fps));
+                        trackBar1.Minimum = 0;
+                        trackBar1.Maximum = (int)(capture.FrameCount / capture.Fps);
+                        trackBar1.Value = 0;
+                        trackBar1.LargeChange = (int)(trackBar1.Maximum / 10);
                     }
 
                     var mat = new Mat();
+                    int intervalMs = 300;
+                    int skip = 1;
                     while (true)
                     {
+                        // 最大FPS以上のフレームレートになるものは、間引きして再生する
                         if (videoPlaying || trackBarModified || positionMsModified)
                         {
-                            // 最大FPS以上のフレームレートになるものは、間引きして再生する
-                            int intervalMs = (int)((1000 / capture.Fps) / videoSpeed);
-                            int skip = (int)Math.Ceiling((double)intervalMsMin / intervalMs);
+                            intervalMs = (int)((1000 / capture.Fps) / videoSpeed);
+                            skip = (int)Math.Ceiling((double)intervalMsMin / intervalMs);
                             if (skip > 1)
                             {
                                 capture.PosFrames += skip - 1;
@@ -204,7 +214,7 @@ namespace VideoTagger
                                         labelFPS.Text = string.Format("{0:F1}[fps]", 1000 / intervalMs);
                                         labelPosFrame.Text = posFrame.ToString();
                                         labelPosSec.Text = (((double)posMs) / 1000).ToString();
-                                        trackBar1.Value = (int)((double)100 * capture.PosFrames / capture.FrameCount);
+                                        trackBar1.Value = (int)((double)trackBar1.Maximum * capture.PosFrames / capture.FrameCount);
                                     }));
                                 }
                                 else
@@ -214,9 +224,8 @@ namespace VideoTagger
                                     labelFPS.Text = string.Format("{0:F1}[fps]", 1000 / intervalMs);
                                     labelPosFrame.Text = posFrame.ToString();
                                     labelPosSec.Text = (((double)posMs) / 1000).ToString();
-                                    trackBar1.Value = (int)((double)100 * capture.PosFrames / capture.FrameCount);
+                                    trackBar1.Value = (int)((double)trackBar1.Maximum * capture.PosFrames / capture.FrameCount);
                                 }
-                                Thread.Sleep(intervalMs);
                             }
                             else
                             {
@@ -233,6 +242,7 @@ namespace VideoTagger
                                 break;
                             }
                         }
+                        Thread.Sleep(intervalMs);
                     }
                 }
             }
@@ -417,6 +427,20 @@ namespace VideoTagger
             {
                 videoPlaying = !videoPlaying;
             }
+            else if (e.KeyCode == Keys.Delete)
+            {
+                if (listBox1.Items.Count > 0 && listBox1.SelectedIndex >= 0)
+                {
+                    string[] kv = ((string)listBox1.Items[listBox1.SelectedIndex]).Split(new char[] { '/' }, 2);
+                    if (kv.Length == 2)
+                    {
+                        listBox1.Items.RemoveAt(listBox1.SelectedIndex);
+                        int k = (int)Math.Round(double.Parse(kv[0]) * 1000);
+                        timeKeys.Remove(k);
+                    }
+                }
+            }
+            e.Handled = true;
         }
 
 
@@ -618,26 +642,9 @@ namespace VideoTagger
                 positionMs = (int)Math.Round(double.Parse(kv[0]) * 1000);
                 positionMsModified = true;
             }
+            trackBar1.Focus();
         }
 
-
-        // DELキーでタグ付け削除
-        private void listBox1_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Delete)
-            {
-                if (listBox1.Items.Count > 0 && listBox1.SelectedIndex >= 0)
-                {
-                    string[] kv = ((string)listBox1.Items[listBox1.SelectedIndex]).Split(new char[] { '/' }, 2);
-                    if (kv.Length == 2)
-                    {
-                        listBox1.Items.RemoveAt(listBox1.SelectedIndex);
-                        int k = (int)Math.Round(double.Parse(kv[0]) * 1000);
-                        timeKeys.Remove(k);
-                    }
-                }
-            }
-        }
     }
 }
 
