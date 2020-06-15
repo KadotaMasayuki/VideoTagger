@@ -454,7 +454,7 @@ namespace VideoTagger
 
         private void toolStripMenuItemFps_Click(object sender, EventArgs e)
         {
-            string s = Microsoft.VisualBasic.Interaction.InputBox("最大FPSを入力");
+            string s = Microsoft.VisualBasic.Interaction.InputBox("最大FPSを入力", "", maxFps.ToString());
             if (s != "")
             {
                 double r;
@@ -469,91 +469,91 @@ namespace VideoTagger
 
         private void toolStripMenuItemT1_Click(object sender, EventArgs e)
         {
-            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 1 を入力");
+            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 1 を入力", "", tags[0]);
             if (s != "")
             {
                 tags[0] = s;
-                toolStripMenuItemT1.Text = s;
+                setTagsMenu();
             }
         }
 
         private void toolStripMenuItemT2_Click(object sender, EventArgs e)
         {
-            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 2 を入力");
+            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 2 を入力", "", tags[1]);
             if (s != "")
             {
                 tags[1] = s;
-                toolStripMenuItemT2.Text = s;
+                setTagsMenu();
             }
         }
 
         private void toolStripMenuItemT3_Click(object sender, EventArgs e)
         {
-            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 3 を入力");
+            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 3 を入力", "", tags[2]);
             if (s != "")
             {
                 tags[2] = s;
-                toolStripMenuItemT3.Text = s;
+                setTagsMenu();
             }
         }
 
         private void toolStripMenuItemT4_Click(object sender, EventArgs e)
         {
-            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 4 を入力");
+            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 4 を入力", "", tags[3]);
             if (s != "")
             {
                 tags[3] = s;
-                toolStripMenuItemT4.Text = s;
+                setTagsMenu();
             }
         }
 
         private void toolStripMenuItemT5_Click(object sender, EventArgs e)
         {
-            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 5 を入力");
+            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 5 を入力", "", tags[4]);
             if (s != "")
             {
                 tags[4] = s;
-                toolStripMenuItemT5.Text = s;
+                setTagsMenu();
             }
         }
 
         private void toolStripMenuItemT6_Click(object sender, EventArgs e)
         {
-            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 6 を入力");
+            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 6 を入力", "", tags[5]);
             if (s != "")
             {
                 tags[5] = s;
-                toolStripMenuItemT6.Text = s;
+                setTagsMenu();
             }
         }
 
         private void toolStripMenuItemT7_Click(object sender, EventArgs e)
         {
-            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 7 を入力");
+            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 7 を入力", "", tags[6]);
             if (s != "")
             {
                 tags[6] = s;
-                toolStripMenuItemT7.Text = s;
+                setTagsMenu();
             }
         }
 
         private void toolStripMenuItemT8_Click(object sender, EventArgs e)
         {
-            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 8 を入力");
+            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 8 を入力", "", tags[7]);
             if (s != "")
             {
                 tags[7] = s;
-                toolStripMenuItemT8.Text = s;
+                setTagsMenu();
             }
         }
 
         private void toolStripMenuItemT9_Click(object sender, EventArgs e)
         {
-            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 9 を入力");
+            string s = Microsoft.VisualBasic.Interaction.InputBox("タグ 9 を入力", "", tags[8]);
             if (s != "")
             {
                 tags[8] = s;
-                toolStripMenuItemT9.Text = s;
+                setTagsMenu();
             }
         }
 
