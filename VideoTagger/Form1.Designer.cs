@@ -121,14 +121,14 @@ namespace VideoTagger
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(3, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(200, 24);
+            this.label1.Size = new System.Drawing.Size(246, 24);
             this.label1.TabIndex = 0;
-            this.label1.Text = "SPACE=\"START/STOP\"\r\nA=\"SLOW\", S=\"NORMAL\", D=\"FAST\"";
+            this.label1.Text = "【SPACE】停止・再開\r\n【A】コマ戻し 【S】遅く 【D】標準 【F】速く 【コマ遅り】";
             // 
             // labelSpeed
             // 
             this.labelSpeed.AutoSize = true;
-            this.labelSpeed.Location = new System.Drawing.Point(209, 0);
+            this.labelSpeed.Location = new System.Drawing.Point(255, 0);
             this.labelSpeed.Name = "labelSpeed";
             this.labelSpeed.Size = new System.Drawing.Size(36, 12);
             this.labelSpeed.TabIndex = 5;
@@ -137,7 +137,7 @@ namespace VideoTagger
             // labelInterval
             // 
             this.labelInterval.AutoSize = true;
-            this.labelInterval.Location = new System.Drawing.Point(251, 0);
+            this.labelInterval.Location = new System.Drawing.Point(297, 0);
             this.labelInterval.Name = "labelInterval";
             this.labelInterval.Size = new System.Drawing.Size(43, 12);
             this.labelInterval.TabIndex = 6;
@@ -146,7 +146,7 @@ namespace VideoTagger
             // labelFPS
             // 
             this.labelFPS.AutoSize = true;
-            this.labelFPS.Location = new System.Drawing.Point(300, 0);
+            this.labelFPS.Location = new System.Drawing.Point(346, 0);
             this.labelFPS.Name = "labelFPS";
             this.labelFPS.Size = new System.Drawing.Size(26, 12);
             this.labelFPS.TabIndex = 6;
@@ -155,7 +155,7 @@ namespace VideoTagger
             // labelPosFrame
             // 
             this.labelPosFrame.AutoSize = true;
-            this.labelPosFrame.Location = new System.Drawing.Point(332, 0);
+            this.labelPosFrame.Location = new System.Drawing.Point(378, 0);
             this.labelPosFrame.Name = "labelPosFrame";
             this.labelPosFrame.Size = new System.Drawing.Size(83, 12);
             this.labelPosFrame.TabIndex = 7;
@@ -164,7 +164,7 @@ namespace VideoTagger
             // labelTotalFrame
             // 
             this.labelTotalFrame.AutoSize = true;
-            this.labelTotalFrame.Location = new System.Drawing.Point(421, 0);
+            this.labelTotalFrame.Location = new System.Drawing.Point(467, 0);
             this.labelTotalFrame.Name = "labelTotalFrame";
             this.labelTotalFrame.Size = new System.Drawing.Size(68, 12);
             this.labelTotalFrame.TabIndex = 1;
@@ -173,7 +173,7 @@ namespace VideoTagger
             // labelPosSec
             // 
             this.labelPosSec.AutoSize = true;
-            this.labelPosSec.Location = new System.Drawing.Point(495, 0);
+            this.labelPosSec.Location = new System.Drawing.Point(541, 0);
             this.labelPosSec.Name = "labelPosSec";
             this.labelPosSec.Size = new System.Drawing.Size(60, 12);
             this.labelPosSec.TabIndex = 8;
@@ -182,7 +182,7 @@ namespace VideoTagger
             // labelTotalSec
             // 
             this.labelTotalSec.AutoSize = true;
-            this.labelTotalSec.Location = new System.Drawing.Point(561, 0);
+            this.labelTotalSec.Location = new System.Drawing.Point(607, 0);
             this.labelTotalSec.Name = "labelTotalSec";
             this.labelTotalSec.Size = new System.Drawing.Size(45, 12);
             this.labelTotalSec.TabIndex = 4;
@@ -394,6 +394,7 @@ namespace VideoTagger
             // 
             // Form1
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(931, 502);
@@ -402,6 +403,8 @@ namespace VideoTagger
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
             this.Text = "Form1";
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.Form1_DragDrop);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.Form1_DragEnter);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();

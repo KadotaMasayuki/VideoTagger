@@ -26,6 +26,8 @@ namespace VideoTagger
         private double trackBarPos = 0.0;
         private bool positionMsModified = false;
         private int positionMs = 0;
+        private bool positionFrameModified = false;
+        private int positionFrame = 0;
         private string settingFile = "setting.txt";
         double maxFps;
         private int intervalMsMin = 100;
@@ -179,7 +181,7 @@ namespace VideoTagger
                     while (true)
                     {
                         // 最大FPS以上のフレームレートになるものは、間引きして再生する
-                        if (videoPlaying || trackBarModified || positionMsModified)
+                        if (videoPlaying || trackBarModified || positionMsModified || positionFrameModified)
                         {
                             intervalMs = (int)((1000 / capture.Fps) / videoSpeed);
                             skip = (int)Math.Ceiling((double)intervalMsMin / intervalMs);
@@ -200,7 +202,14 @@ namespace VideoTagger
                                 positionMsModified = false;
                                 capture.PosMsec = positionMs;
                             }
+                            // 何らかの方法でフレームポジション指定された
+                            if (positionFrameModified)
+                            {
+                                positionFrameModified = false;
+                                capture.PosFrames = positionFrame;
+                            }
                             posFrame = capture.PosFrames;
+                            positionFrame = posFrame;
                             posMs = capture.PosMsec;
                             if (capture.Read(mat))
                             {
@@ -212,8 +221,8 @@ namespace VideoTagger
                                         labelSpeed.Text = string.Format("Speed x{0:F3} ", videoSpeed);
                                         labelInterval.Text = string.Format("interval {0:F3}[s] ", ((double)intervalMs)/1000);
                                         labelFPS.Text = string.Format("{0:F1}[fps]", 1000 / intervalMs);
-                                        labelPosFrame.Text = posFrame.ToString();
-                                        labelPosSec.Text = (((double)posMs) / 1000).ToString();
+                                        labelPosFrame.Text = string.Format("{0,8}", posFrame);
+                                        labelPosSec.Text = string.Format("{0,10:F3}", ((double)posMs) / 1000);
                                         trackBar1.Value = (int)((double)trackBar1.Maximum * capture.PosFrames / capture.FrameCount);
                                     }));
                                 }
@@ -222,8 +231,8 @@ namespace VideoTagger
                                     labelSpeed.Text = string.Format("Speed x{0:F3} ", videoSpeed);
                                     labelInterval.Text = string.Format("interval {0:F3}[s] ", ((double)intervalMs) / 1000);
                                     labelFPS.Text = string.Format("{0:F1}[fps]", 1000 / intervalMs);
-                                    labelPosFrame.Text = posFrame.ToString();
-                                    labelPosSec.Text = (((double)posMs) / 1000).ToString();
+                                    labelPosFrame.Text = string.Format("{0,8}", posFrame);
+                                    labelPosSec.Text = string.Format("{0,10:F3}", ((double)posMs) / 1000);
                                     trackBar1.Value = (int)((double)trackBar1.Maximum * capture.PosFrames / capture.FrameCount);
                                 }
                             }
@@ -271,39 +280,46 @@ namespace VideoTagger
         }
 
 
-        // 動画を開く
+        // 動画選択のダイアログを開く
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var fd = new OpenFileDialog();
             var dr = fd.ShowDialog();
             if (dr == DialogResult.OK)
             {
-                // 動画を再生中であれば終了させる
-                if (bw != null)
+                openMovie(fd.FileName);
+            }
+        }
+
+        // 動画を開く
+        private void openMovie(string filePath)
+        {
+            // 動画を再生中であれば終了させる
+            if (bw != null)
+            {
+                if (bw.IsBusy)
                 {
-                    if (bw.IsBusy)
+                    bw.CancelAsync();
+                    while (bw.IsBusy)
                     {
-                        bw.CancelAsync();
-                        while (bw.IsBusy)
-                        {
-                            Thread.Sleep(500);
-                        }
+                        Thread.Sleep(500);
                     }
                 }
-                bw = null;
-                bw = new BackgroundWorker();
-                bw.WorkerSupportsCancellation = true;
-                bw.WorkerReportsProgress = true;
-                bw.DoWork += bw_DoWork;
-                bw.ProgressChanged += bw_ProgressChanged;
-
-                videoFile = fd.FileName;
-                videoSettingFile = videoFile + ".config.txt";
-                // 指定動画の固有設定やタイムスタンプを読み出し
-                readVideoSettings();
-
-                bw.RunWorkerAsync();
             }
+            bw = null;
+            bw = new BackgroundWorker();
+            bw.WorkerSupportsCancellation = true;
+            bw.WorkerReportsProgress = true;
+            bw.DoWork += bw_DoWork;
+            bw.ProgressChanged += bw_ProgressChanged;
+
+            videoSettingFile = filePath + ".config.txt";
+            // 指定動画の固有設定やタイムスタンプを読み出し
+            readVideoSettings();
+
+            // 開始
+            videoFile = filePath;
+            bw.RunWorkerAsync();
         }
 
 
@@ -361,7 +377,7 @@ namespace VideoTagger
                     listBox1.Items.Add((((double)pair.Key) / 1000).ToString() + "/" + pair.Value);
                 }
             }
-            else if (e.KeyCode == Keys.A)
+            else if (e.KeyCode == Keys.S)
             {
                 if (videoSpeed < 0.02)
                 {
@@ -392,11 +408,11 @@ namespace VideoTagger
                     videoSpeed -= 10;
                 }
             }
-            else if (e.KeyCode == Keys.S)
+            else if (e.KeyCode == Keys.D)
             {
                 videoSpeed = 1.0;
             }
-            else if (e.KeyCode == Keys.D)
+            else if (e.KeyCode == Keys.F)
             {
                 if (videoSpeed >= 20)
                 {
@@ -422,6 +438,18 @@ namespace VideoTagger
                 {
                     videoSpeed += 0.02;
                 }
+            }
+            else if (e.KeyCode == Keys.A)
+            {
+                videoPlaying = false;
+                positionFrameModified = true;
+                positionFrame--;
+            }
+            else if (e.KeyCode == Keys.G)
+            {
+                videoPlaying = false;
+                positionFrameModified = true;
+                positionFrame++;
             }
             else if (e.KeyCode == Keys.Space)
             {
@@ -645,6 +673,25 @@ namespace VideoTagger
             trackBar1.Focus();
         }
 
+        private void Form1_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
+            }
+        }
+
+        private void Form1_DragDrop(object sender, DragEventArgs e)
+        {
+            // ドロップされたファイルのフルパス
+            string[] fileName = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+            // 最初のファイルだけを開く(動画じゃなかったら処理されない)
+            openMovie(fileName[0]);
+        }
     }
 }
 
