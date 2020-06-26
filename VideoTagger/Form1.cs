@@ -603,7 +603,7 @@ namespace VideoTagger
                 sw.WriteLine(tags[8]);
                 foreach (KeyValuePair<int, string> pair in timeKeys)
                 {
-                    sw.WriteLine((((double)pair.Key) / 1000).ToString() + "/" + pair.Value);
+                    sw.WriteLine((((double)pair.Key) / 1000).ToString() + "\t" + pair.Value);  // 再利用しやすいようタブ区切りにする
                 }
             }
             trackBar1.Focus();
@@ -640,7 +640,7 @@ namespace VideoTagger
                     while (!sr.EndOfStream)
                     {
                         string aLine = sr.ReadLine();
-                        string[] kv = aLine.Split(new char[] { '/' }, 2);
+                        string[] kv = aLine.Split(new char[] { '\t' }, 2);
                         if (kv.Length == 2)
                         {
                             timeKeys.Add((int)(double.Parse(kv[0]) * 1000), kv[1]);
